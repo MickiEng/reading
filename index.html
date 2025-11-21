@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Sound Slider + Letter Game</title>
+  <title>Phonics Games: Slider, Letters & Words</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -22,6 +22,7 @@
       font-family: 'Andika', sans-serif;
       background: #f5f5f5;
       overflow-x: hidden; 
+      padding-bottom: 40px; /* Space at bottom */
     }
 
     .card {
@@ -40,7 +41,7 @@
       margin: 0 0 12px 0;
     }
 
-    /* Slider letters */
+    /* --- GAME 1: Sound Slider Styles --- */
     .letters {
       display: flex;
       justify-content: center;
@@ -58,9 +59,7 @@
       cursor: default;
     }
 
-    .letter.inactive {
-      opacity: 0.3;
-    }
+    .letter.inactive { opacity: 0.3; }
 
     .letter.active {
       background: #e0f7fa;
@@ -75,7 +74,6 @@
       min-height: 2.4rem;
     }
 
-    /* Slider */
     input[type="range"] {
       -webkit-appearance: none;
       width: 100%;
@@ -143,15 +141,10 @@
       transition: transform 0.1s;
     }
 
-    #shuffleBtn {
-      background: #2196f3;
-    }
+    #shuffleBtn { background: #2196f3; }
+    button:active { transform: scale(0.97); }
 
-    button:active {
-      transform: scale(0.97);
-    }
-
-    /* Letter game styles */
+    /* --- GAME 2: Letter Game Styles --- */
     .letter-display {
       font-size: 5rem;
       margin: 8px 0 12px;
@@ -196,6 +189,7 @@
       pointer-events: none;
     }
 
+    /* Shared States for Game 2 & 3 */
     .picture-btn.correct {
       border-color: #4caf50;
       background: #e8f5e9;
@@ -216,6 +210,74 @@
       font-weight: 700;
     }
 
+    /* --- GAME 3: Word to Picture Styles --- */
+    .target-word {
+      font-size: 3.5rem;
+      font-weight: 700;
+      color: #333;
+      margin: 10px 0;
+      min-height: 1.2em;
+    }
+
+    .bubble-grid {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 20px; /* Increased gap slightly for bubbles */
+      margin: 25px auto;
+      max-width: 380px;
+    }
+
+    /* NEW BUBBLE STYLING */
+    .bubble-option {
+      width: 90px; /* Slightly larger */
+      height: 90px;
+      border-radius: 50%;
+      
+      /* Transparent Blue/Pink tinted gradient background */
+      background: linear-gradient(135deg, rgba(200, 240, 255, 0.5), rgba(255, 220, 240, 0.5));
+      
+      /* Inset shadows for sheen and 3D effect */
+      box-shadow: inset 2px 2px 10px rgba(255, 255, 255, 0.9), /* Top-left highlight */
+                  inset -2px -2px 10px rgba(0, 0, 0, 0.05), /* Bottom-right shadow */
+                  0 4px 8px rgba(0,0,0,0.1); /* Outer drop shadow */
+      
+      border: 1px solid rgba(255, 255, 255, 0.7); /* Semi-transparent white border */
+      
+      font-size: 3rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: transform 0.1s, background 0.2s, border-color 0.2s, box-shadow 0.2s;
+      -webkit-tap-highlight-color: transparent;
+      user-select: none; 
+    }
+
+    .bubble-option:active {
+      transform: scale(0.95);
+      box-shadow: inset 1px 1px 5px rgba(255, 255, 255, 0.7),
+                  inset -1px -1px 5px rgba(0, 0, 0, 0.05),
+                  0 2px 4px rgba(0,0,0,0.1);
+    }
+
+    /* Bubble Specific Correct/Wrong States (overrides shared states) */
+    .bubble-option.correct {
+      /* Green tint over the bubble */
+      background: linear-gradient(135deg, rgba(200, 255, 200, 0.6), rgba(180, 240, 180, 0.6));
+      border-color: #4caf50;
+      animation: popBounce 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+
+    .bubble-option.wrong {
+      /* Red tint over the bubble */
+      background: linear-gradient(135deg, rgba(255, 200, 200, 0.6), rgba(240, 180, 180, 0.6));
+      border-color: #f44336;
+      animation: shake 0.4s;
+    }
+
+
+    /* Animations */
     @keyframes popBounce {
       0% { transform: scale(1); }
       40% { transform: scale(1.15); }
@@ -262,8 +324,48 @@
     <div id="letterFeedback" class="feedback"></div>
   </div>
 
+  <div class="card">
+    <h1>Word Game</h1>
+    <div id="targetWord" class="target-word"></div>
+    <div class="hint">Tap the bubble that matches the word.</div>
+    
+    <div id="bubbleGrid" class="bubble-grid">
+      </div>
+
+    <div id="wordGameFeedback" class="feedback"></div>
+  </div>
+
   <script>
-    // --- WORD LIST (Cleaned to prevent errors) ---
+    /* ----------------------------------------------------------
+       SHARED UTILITIES
+       ---------------------------------------------------------- */
+    function shuffleArray(arr) {
+      for (let i = arr.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [arr[i], arr[j]] = [arr[j], arr[i]];
+      }
+    }
+
+    function fireConfettiFromButton(buttonEl) {
+      if (typeof confetti === 'undefined') return;
+
+      const rect = buttonEl.getBoundingClientRect();
+      const x = (rect.left + rect.width / 2) / window.innerWidth;
+      const y = (rect.top + rect.height / 2) / window.innerHeight;
+
+      confetti({
+        particleCount: 60,
+        spread: 60,
+        origin: { x: x, y: y },
+        colors: ['#4caf50', '#ffeb3b', '#2196f3', '#ff9800'],
+        disableForReducedMotion: true,
+        zIndex: 1000,
+      });
+    }
+
+    /* ----------------------------------------------------------
+       GAME 1: SOUND SLIDER LOGIC
+       ---------------------------------------------------------- */
     const words = [
       "cat","can","cap","fan","man","map","nap","pan","rat","bag",
       "bed","beg","den","hen","jet","leg","men","pen","red","wet",
@@ -273,22 +375,12 @@
     ];
 
     let currentIndex = 0;
-
     const lettersContainer = document.getElementById("letters");
     const blendedWordEl = document.getElementById("blendedWord");
     const slider = document.getElementById("blendSlider");
     const nextWordBtn = document.getElementById("nextWordBtn");
     const shuffleBtn = document.getElementById("shuffleBtn");
 
-    // Utility
-    function shuffleArray(arr) {
-      for (let i = arr.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [arr[i], arr[j]] = [arr[j], arr[i]];
-      }
-    }
-
-    // --- SLIDER LOGIC ---
     function loadWord() {
       const word = words[currentIndex];
       lettersContainer.innerHTML = "";
@@ -337,11 +429,11 @@
       loadWord();
     });
 
-    // Start the first game
-    loadWord();
+    loadWord(); // Init Game 1
 
-
-    // --- LETTER GAME DATA (Cleaned) ---
+    /* ----------------------------------------------------------
+       GAME 2: LETTER GAME LOGIC
+       ---------------------------------------------------------- */
     const beginSoundChoices = {
       a: { correct: { word: "apple", emoji: "🍎" }, wrong: { word: "sun", emoji: "☀️" } },
       b: { correct: { word: "ball", emoji: "⚽" }, wrong: { word: "cat", emoji: "🐱" } },
@@ -371,7 +463,6 @@
       z: { correct: { word: "zebra", emoji: "🦓" }, wrong: { word: "hat", emoji: "🎩" } }
     };
 
-    // --- LETTER GAME LOGIC ---
     const letterDisplayEl = document.getElementById("letterDisplay");
     const caseToggleBtn = document.getElementById("caseToggleBtn");
     const optionLeftBtn = document.getElementById("optionLeft");
@@ -431,24 +522,6 @@
       feedbackEl.textContent = "";
     }
 
-    function fireConfettiFromButton(buttonEl) {
-      // Safety check: If confetti didn't load (no internet), don't crash
-      if (typeof confetti === 'undefined') return;
-
-      const rect = buttonEl.getBoundingClientRect();
-      const x = (rect.left + rect.width / 2) / window.innerWidth;
-      const y = (rect.top + rect.height / 2) / window.innerHeight;
-
-      confetti({
-        particleCount: 60,
-        spread: 60,
-        origin: { x: x, y: y },
-        colors: ['#4caf50', '#ffeb3b', '#2196f3', '#ff9800'],
-        disableForReducedMotion: true,
-        zIndex: 1000,
-      });
-    }
-
     function handlePictureClick(event) {
       if (isLocked) return;
 
@@ -487,7 +560,128 @@
     });
 
     updateCaseButtonText();
-    loadLetterRound();
+    loadLetterRound(); // Init Game 2
+
+    /* ----------------------------------------------------------
+       GAME 3: WORD TO PICTURE LOGIC (NEW)
+       ---------------------------------------------------------- */
+    
+    const wordPictureItems = [
+      { word: "apple", emoji: "🍎" }, { word: "baby", emoji: "👶" },
+      { word: "ball", emoji: "⚽" }, { word: "bear", emoji: "🐻" },
+      { word: "bell", emoji: "🔔" }, { word: "bird", emoji: "🐦" },
+      { word: "boat", emoji: "🚤" }, { word: "bread", emoji: "🍞" },
+      { word: "cake", emoji: "🎂" }, { word: "car", emoji: "🚗" },
+      { word: "chair", emoji: "🪑" }, { word: "chicken", emoji: "🐔" },
+      { word: "coat", emoji: "🧥" }, { word: "corn", emoji: "🌽" },
+      { word: "cow", emoji: "🐄" }, 
+      // "doll" removed here
+      { word: "door", emoji: "🚪" }, { word: "duck", emoji: "🦆" },
+      { word: "egg", emoji: "🥚" }, { word: "eye", emoji: "👁️" },
+      { word: "fire", emoji: "🔥" }, { word: "fish", emoji: "🐟" },
+      { word: "flower", emoji: "🌸" }, { word: "hand", emoji: "✋" },
+      { word: "hill", emoji: "⛰️" }, { word: "home", emoji: "🏠" },
+      { word: "horse", emoji: "🐴" }, { word: "house", emoji: "🏡" },
+      { word: "letter", emoji: "✉️" }, { word: "milk", emoji: "🥛" },
+      { word: "money", emoji: "💵" }, { word: "nest", emoji: "🪹" },
+      { word: "paper", emoji: "📄" }, { word: "party", emoji: "🎉" },
+      { word: "picture", emoji: "🖼️" }, { word: "rabbit", emoji: "🐰" },
+      { word: "rain", emoji: "🌧️" }, { word: "ring", emoji: "💍" },
+      { word: "school", emoji: "🏫" }, { word: "sheep", emoji: "🐑" },
+      { word: "shoe", emoji: "👟" }, { word: "snow", emoji: "❄️" },
+      { word: "song", emoji: "🎵" }, { word: "squirrel", emoji: "🐿️" },
+      { word: "street", emoji: "🛣️" }, { word: "tree", emoji: "🌳" },
+      { word: "watch", emoji: "⌚" }, { word: "water", emoji: "💧" },
+      { word: "wind", emoji: "💨" }, { word: "window", emoji: "🪟" },
+      { word: "wood", emoji: "🪵" }
+    ];
+
+    let currentWpIndex = 0;
+    let wpLocked = false;
+
+    const targetWordEl = document.getElementById("targetWord");
+    const bubbleGridEl = document.getElementById("bubbleGrid");
+    const wordGameFeedbackEl = document.getElementById("wordGameFeedback");
+
+    function loadWordToPictureRound() {
+      // 1. Reset state
+      wpLocked = false;
+      wordGameFeedbackEl.textContent = "";
+      bubbleGridEl.innerHTML = "";
+      
+      // 2. Handle wrapping
+      if (currentWpIndex >= wordPictureItems.length) {
+        shuffleArray(wordPictureItems);
+        currentWpIndex = 0;
+      }
+
+      // 3. Select Target
+      const targetItem = wordPictureItems[currentWpIndex];
+      targetWordEl.textContent = targetItem.word;
+
+      // 4. Select 2 Distractors (Changed from 3 to 2)
+      const distractors = wordPictureItems.filter(item => item.word !== targetItem.word);
+      shuffleArray(distractors);
+      // Slice 2 distractors for a total of 3 options
+      const choices = [targetItem, ...distractors.slice(0, 2)];
+      
+      // 5. Shuffle options
+      shuffleArray(choices);
+
+      // 6. Render Bubbles
+      choices.forEach(item => {
+        const isCorrect = (item.word === targetItem.word);
+        
+        const bubble = document.createElement("div");
+        bubble.className = "bubble-option";
+        bubble.textContent = item.emoji;
+        bubble.dataset.correct = isCorrect ? "true" : "false";
+        
+        bubble.addEventListener("click", handleBubbleClick);
+        bubbleGridEl.appendChild(bubble);
+      });
+    }
+
+    function handleBubbleClick(e) {
+      if (wpLocked) return;
+      
+      const bubble = e.currentTarget;
+      const isCorrect = bubble.dataset.correct === "true";
+      
+      if (isCorrect) {
+        wpLocked = true;
+        bubble.classList.add("correct");
+        
+        const targetWord = targetWordEl.textContent;
+        
+        // Feedback
+        wordGameFeedbackEl.textContent = `Yes! That picture matches "${targetWord}".`;
+        wordGameFeedbackEl.style.color = "#2e7d32";
+        
+        // Confetti
+        fireConfettiFromButton(bubble);
+
+        // Next Round Delay
+        setTimeout(() => {
+          currentWpIndex++;
+          loadWordToPictureRound();
+        }, 1500);
+
+      } else {
+        // Wrong
+        bubble.classList.add("wrong");
+        wordGameFeedbackEl.textContent = "Oops, try again!";
+        wordGameFeedbackEl.style.color = "#d32f2f";
+        
+        setTimeout(() => {
+          bubble.classList.remove("wrong");
+        }, 500);
+      }
+    }
+
+    // Init Game 3
+    shuffleArray(wordPictureItems);
+    loadWordToPictureRound();
 
   </script>
 </body>
