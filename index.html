@@ -367,12 +367,18 @@
       f: { correct: { word: "fish", emoji: "🐟" }, wrong: { word: "moon", emoji: "🌙" } },
       g: { correct: { word: "goat", emoji: "🐐" }, wrong: { word: "leaf", emoji: "🍃" } },
       h: { correct: { word: "hat", emoji: "🎩" }, wrong: { word: "star", emoji: "⭐" } },
-      i: { correct: { word: "ice", emoji: "🧊" }, wrong: { word: "bed", emoji: "🛏️" } },
+      
+      // CHANGED: Ice -> Ice Cream (More recognizable/compatible)
+      i: { correct: { word: "ice cream", emoji: "🍦" }, wrong: { word: "bed", emoji: "🛏️" } },
+      
       j: { correct: { word: "jet", emoji: "✈️" }, wrong: { word: "pig", emoji: "🐷" } },
       k: { correct: { word: "key", emoji: "🔑" }, wrong: { word: "apple", emoji: "🍎" } },
       l: { correct: { word: "lion", emoji: "🦁" }, wrong: { word: "egg", emoji: "🥚" } },
       m: { correct: { word: "moon", emoji: "🌙" }, wrong: { word: "car", emoji: "🚗" } },
-      n: { correct: { word: "nest", emoji: "𪆁" }, wrong: { word: "dog", emoji: "🐶" } },
+      
+      // CHANGED: Nest -> Nose (Fixes broken image issue)
+      n: { correct: { word: "nose", emoji: "👃" }, wrong: { word: "dog", emoji: "🐶" } },
+      
       o: { correct: { word: "octopus", emoji: "🐙" }, wrong: { word: "hat", emoji: "🎩" } },
       p: { correct: { word: "pig", emoji: "🐷" }, wrong: { word: "sun", emoji: "☀️" } },
       q: { correct: { word: "queen", emoji: "👑" }, wrong: { word: "fish", emoji: "🐟" } },
@@ -381,7 +387,11 @@
       t: { correct: { word: "tiger", emoji: "🐯" }, wrong: { word: "egg", emoji: "🥚" } },
       u: { correct: { word: "umbrella", emoji: "☔" }, wrong: { word: "lion", emoji: "🦁" } },
       v: { correct: { word: "van", emoji: "🚐" }, wrong: { word: "ball", emoji: "⚽" } },
-      w: { correct: { word: "wagon", emoji: "🛒" }, wrong: { word: "dog", emoji: "🐶" } },
+      
+      // CHANGED: Wagon (Cart) -> Whale (Clearer image)
+      w: { correct: { word: "whale", emoji: "🐳" }, wrong: { word: "dog", emoji: "🐶" } },
+      
+      // Note: X-ray uses Skull because the X-ray emoji is also too new for many phones
       x: { correct: { word: "x-ray", emoji: "💀" }, wrong: { word: "cat", emoji: "🐱" } },
       y: { correct: { word: "yarn", emoji: "🧶" }, wrong: { word: "leaf", emoji: "🍃" } },
       z: { correct: { word: "zebra", emoji: "🦓" }, wrong: { word: "hat", emoji: "🎩" } }
@@ -519,3 +529,4 @@
 
 </body>
 </html>
+
