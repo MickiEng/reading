@@ -10,7 +10,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Andika:wght@400;700&display=swap" rel="stylesheet">
 
   <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
-   
+    
   <style>
     html, body {
       margin: 0;
@@ -25,6 +25,7 @@
       padding-bottom: 40px; /* Space at bottom */
     }
 
+    /* Main Card Style */
     .card {
       background: white;
       padding: 24px;
@@ -34,11 +35,55 @@
       max-width: 420px;
       width: 90%;
       margin: 24px auto;
+      /* Default to hidden, JS will toggle 'active' */
+      display: none; 
+    }
+
+    /* Only show the card that has the active class */
+    .card.active {
+      display: block;
+      animation: fadeIn 0.4s ease-in-out;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
     }
 
     h1 {
       font-size: 1.4rem;
       margin: 0 0 12px 0;
+    }
+
+    /* --- NAVIGATION BUTTONS --- */
+    .nav-row {
+      margin-top: 30px;
+      padding-top: 20px;
+      border-top: 2px dashed #eee;
+      display: flex;
+      justify-content: center; /* Centers the buttons */
+      gap: 40px; /* Space between Left and Right arrows */
+    }
+
+    .nav-btn {
+      background: #ff9800; /* Orange to distinguish from game buttons */
+      color: white;
+      font-size: 2rem;
+      width: 60px;
+      height: 60px;
+      border-radius: 50%;
+      border: none;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 4px 0 #e65100; /* 3D click effect */
+      transition: transform 0.1s, box-shadow 0.1s;
+    }
+
+    .nav-btn:active {
+      transform: translateY(4px);
+      box-shadow: 0 0 0 #e65100;
     }
 
     /* --- GAME 1: Sound Slider Styles --- */
@@ -127,7 +172,7 @@
       flex-wrap: wrap;
     }
 
-    button {
+    .game-btn {
       font-family: 'Andika', sans-serif;
       font-size: 1rem;
       padding: 12px 20px;
@@ -142,7 +187,7 @@
     }
 
     #shuffleBtn { background: #2196f3; }
-    button:active { transform: scale(0.97); }
+    .game-btn:active { transform: scale(0.97); }
 
     /* --- GAME 2: Letter Game Styles --- */
     .letter-display {
@@ -295,22 +340,26 @@
 </head>
 <body>
 
-  <div class="card">
+  <div id="game1" class="card active">
     <h1>Sound Slider</h1>
     <div id="letters" class="letters"></div>
     <div id="blendedWord" class="blended-word"></div>
     <input id="blendSlider" type="range" min="0" max="2" step="1" value="0">
     <div class="hint">Say the sounds as you move the slider.</div>
     <div class="buttons">
-      <button id="nextWordBtn">New Word</button>
-      <button id="shuffleBtn">Shuffle</button>
+      <button id="nextWordBtn" class="game-btn">New Word</button>
+      <button id="shuffleBtn" class="game-btn">Shuffle</button>
+    </div>
+
+    <div class="nav-row">
+      <button class="nav-btn" onclick="switchGame(2)">➡️</button>
     </div>
   </div>
 
-  <div class="card">
+  <div id="game2" class="card">
     <h1>Letter Game</h1>
     <div id="letterDisplay" class="letter-display">A</div>
-    <button id="caseToggleBtn" class="case-toggle-btn">Make Small</button>
+    <button id="caseToggleBtn" class="game-btn case-toggle-btn">Make Small</button>
     <div class="picture-buttons">
       <button id="optionLeft" class="picture-btn">
         <span class="emoji">🍎</span>
@@ -322,9 +371,14 @@
       </button>
     </div>
     <div id="letterFeedback" class="feedback"></div>
+
+    <div class="nav-row">
+      <button class="nav-btn" onclick="switchGame(1)">⬅️</button>
+      <button class="nav-btn" onclick="switchGame(3)">➡️</button>
+    </div>
   </div>
 
-  <div class="card">
+  <div id="game3" class="card">
     <h1>Word Game</h1>
     <div id="targetWord" class="target-word"></div>
     <div class="hint">Tap the bubble that matches the word.</div>
@@ -333,9 +387,31 @@
       </div>
 
     <div id="wordGameFeedback" class="feedback"></div>
+
+    <div class="nav-row">
+      <button class="nav-btn" onclick="switchGame(2)">⬅️</button>
+    </div>
   </div>
 
   <script>
+    /* ----------------------------------------------------------
+       NAVIGATION LOGIC
+       ---------------------------------------------------------- */
+    function switchGame(gameNumber) {
+      // Hide all cards
+      document.querySelectorAll('.card').forEach(card => {
+        card.classList.remove('active');
+      });
+
+      // Show requested card
+      const target = document.getElementById('game' + gameNumber);
+      if(target) {
+        target.classList.add('active');
+        window.scrollTo(0,0); // Reset scroll to top
+      }
+    }
+
+
     /* ----------------------------------------------------------
        SHARED UTILITIES
        ---------------------------------------------------------- */
