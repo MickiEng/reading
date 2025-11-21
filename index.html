@@ -4,8 +4,13 @@
   <meta charset="UTF-8">
   <title>Sound Slider + Letter Game</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
   
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Andika:wght@400;700&display=swap" rel="stylesheet">
+
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+   
   <style>
     html, body {
       margin: 0;
@@ -14,9 +19,8 @@
     }
 
     body {
-      font-family: system-ui, sans-serif;
+      font-family: 'Andika', sans-serif;
       background: #f5f5f5;
-      /* Prevent horizontal scroll if confetti flies off slightly */
       overflow-x: hidden; 
     }
 
@@ -51,6 +55,7 @@
       border-radius: 8px;
       border: 2px solid transparent;
       transition: background 0.2s, transform 0.2s, border-color 0.2s;
+      cursor: default;
     }
 
     .letter.inactive {
@@ -70,7 +75,7 @@
       min-height: 2.4rem;
     }
 
-    /* BIG toddler-friendly slider */
+    /* Slider */
     input[type="range"] {
       -webkit-appearance: none;
       width: 100%;
@@ -125,6 +130,7 @@
     }
 
     button {
+      font-family: 'Andika', sans-serif;
       font-size: 1rem;
       padding: 12px 20px;
       border-radius: 999px;
@@ -132,7 +138,7 @@
       cursor: pointer;
       background: #4caf50;
       color: white;
-      font-weight: 600;
+      font-weight: 700;
       white-space: nowrap;
       transition: transform 0.1s;
     }
@@ -145,11 +151,11 @@
       transform: scale(0.97);
     }
 
-    /* Beginning-sound game styles */
+    /* Letter game styles */
     .letter-display {
-      font-size: 4rem;
+      font-size: 5rem;
       margin: 8px 0 12px;
-      font-weight: bold;
+      font-weight: 700;
       color: #333;
     }
 
@@ -171,7 +177,7 @@
       min-width: 140px;
       max-width: 180px;
       border-radius: 16px;
-      border: 4px solid transparent; /* Thicker border for clarity */
+      border: 4px solid transparent;
       padding: 12px;
       background: #eeeeee;
       cursor: pointer;
@@ -179,25 +185,23 @@
     }
 
     .picture-btn .emoji {
-      font-size: 3rem; /* Bigger emoji for toddlers */
+      font-size: 3rem;
       display: block;
       margin-bottom: 4px;
-      pointer-events: none; /* Clicks pass through to button */
-    }
-
-    .picture-btn .word-label {
-      font-size: 1.2rem;
       pointer-events: none;
     }
 
-    /* Success State Styles */
+    .picture-btn .word-label {
+      font-size: 1.3rem;
+      pointer-events: none;
+    }
+
     .picture-btn.correct {
       border-color: #4caf50;
       background: #e8f5e9;
       animation: popBounce 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
     }
 
-    /* Wrong State Styles */
     .picture-btn.wrong {
       border-color: #f44336;
       background: #ffebee;
@@ -209,10 +213,9 @@
       font-size: 1.1rem;
       min-height: 1.2em;
       color: #444;
-      font-weight: bold;
+      font-weight: 700;
     }
 
-    /* Animations */
     @keyframes popBounce {
       0% { transform: scale(1); }
       40% { transform: scale(1.15); }
@@ -232,14 +235,10 @@
 
   <div class="card">
     <h1>Sound Slider</h1>
-
     <div id="letters" class="letters"></div>
     <div id="blendedWord" class="blended-word"></div>
-
     <input id="blendSlider" type="range" min="0" max="2" step="1" value="0">
-
     <div class="hint">Say the sounds as you move the slider.</div>
-
     <div class="buttons">
       <button id="nextWordBtn">New Word</button>
       <button id="shuffleBtn">Shuffle</button>
@@ -248,53 +247,29 @@
 
   <div class="card">
     <h1>Letter Game</h1>
-
     <div id="letterDisplay" class="letter-display">A</div>
-
     <button id="caseToggleBtn" class="case-toggle-btn">Make Small</button>
-
     <div class="picture-buttons">
       <button id="optionLeft" class="picture-btn">
         <span class="emoji">🍎</span>
         <span class="word-label">apple</span>
       </button>
-
       <button id="optionRight" class="picture-btn">
         <span class="emoji">☀️</span>
         <span class="word-label">sun</span>
       </button>
     </div>
-
     <div id="letterFeedback" class="feedback"></div>
   </div>
 
   <script>
-    /* ---------- Utility ---------- */
-    function shuffleArray(arr) {
-      for (let i = arr.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [arr[i], arr[j]] = [arr[j], arr[i]];
-      }
-    }
-
-    /* ---------- Word slider logic ---------- */
-
-    let words = [
-      // A - short a
-      "cat","can","cap","fan","man",
-      "map","nap","pan","rat","bag",
-      // E - short e
-      "bed","beg","den","hen","jet",
-      "leg","men","pen","red","wet",
-      // I - short i
-      "big","dig","fin","fix","hid",
-      "jig","pig","pin","sit","six",
-      // O - short o
-      "box","cob","dog","dot","hop",
-      "hot","log","mop","pot","top",
-      // U - short u
-      "bug","bun","cup","cut","fun",
-      "gum","hug","mud","sun","pup"
+    // --- WORD LIST (Cleaned to prevent errors) ---
+    const words = [
+      "cat","can","cap","fan","man","map","nap","pan","rat","bag",
+      "bed","beg","den","hen","jet","leg","men","pen","red","wet",
+      "big","dig","fin","fix","hid","jig","pig","pin","sit","six",
+      "box","cob","dog","dot","hop","hot","log","mop","pot","top",
+      "bug","bun","cup","cut","fun","gum","hug","mud","sun","pup"
     ];
 
     let currentIndex = 0;
@@ -305,6 +280,15 @@
     const nextWordBtn = document.getElementById("nextWordBtn");
     const shuffleBtn = document.getElementById("shuffleBtn");
 
+    // Utility
+    function shuffleArray(arr) {
+      for (let i = arr.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [arr[i], arr[j]] = [arr[j], arr[i]];
+      }
+    }
+
+    // --- SLIDER LOGIC ---
     function loadWord() {
       const word = words[currentIndex];
       lettersContainer.innerHTML = "";
@@ -317,7 +301,6 @@
         span.className = "letter inactive";
         lettersContainer.appendChild(span);
       }
-
       updateBlend();
     }
 
@@ -342,7 +325,7 @@
     }
 
     slider.addEventListener("input", updateBlend);
-
+    
     nextWordBtn.addEventListener("click", () => {
       currentIndex = (currentIndex + 1) % words.length;
       loadWord();
@@ -354,31 +337,26 @@
       loadWord();
     });
 
+    // Start the first game
     loadWord();
 
-    /* ---------- Beginning-sound game data ---------- */
 
+    // --- LETTER GAME DATA (Cleaned) ---
     const beginSoundChoices = {
       a: { correct: { word: "apple", emoji: "🍎" }, wrong: { word: "sun", emoji: "☀️" } },
       b: { correct: { word: "ball", emoji: "⚽" }, wrong: { word: "cat", emoji: "🐱" } },
       c: { correct: { word: "car", emoji: "🚗" }, wrong: { word: "fish", emoji: "🐟" } },
       d: { correct: { word: "dog", emoji: "🐶" }, wrong: { word: "hat", emoji: "🎩" } },
-      e: { correct: { word: "egg", emoji: "🥚" }, wrong: { word: "bus",emoji: "🚌" } },
+      e: { correct: { word: "egg", emoji: "🥚" }, wrong: { word: "bus", emoji: "🚌" } },
       f: { correct: { word: "fish", emoji: "🐟" }, wrong: { word: "moon", emoji: "🌙" } },
       g: { correct: { word: "goat", emoji: "🐐" }, wrong: { word: "leaf", emoji: "🍃" } },
       h: { correct: { word: "hat", emoji: "🎩" }, wrong: { word: "star", emoji: "⭐" } },
-      
-      // CHANGED: Ice -> Ice Cream (More recognizable/compatible)
       i: { correct: { word: "ice cream", emoji: "🍦" }, wrong: { word: "bed", emoji: "🛏️" } },
-      
       j: { correct: { word: "jet", emoji: "✈️" }, wrong: { word: "pig", emoji: "🐷" } },
       k: { correct: { word: "key", emoji: "🔑" }, wrong: { word: "apple", emoji: "🍎" } },
       l: { correct: { word: "lion", emoji: "🦁" }, wrong: { word: "egg", emoji: "🥚" } },
       m: { correct: { word: "moon", emoji: "🌙" }, wrong: { word: "car", emoji: "🚗" } },
-      
-      // CHANGED: Nest -> Nose (Fixes broken image issue)
       n: { correct: { word: "nose", emoji: "👃" }, wrong: { word: "dog", emoji: "🐶" } },
-      
       o: { correct: { word: "octopus", emoji: "🐙" }, wrong: { word: "hat", emoji: "🎩" } },
       p: { correct: { word: "pig", emoji: "🐷" }, wrong: { word: "sun", emoji: "☀️" } },
       q: { correct: { word: "queen", emoji: "👑" }, wrong: { word: "fish", emoji: "🐟" } },
@@ -387,18 +365,13 @@
       t: { correct: { word: "tiger", emoji: "🐯" }, wrong: { word: "egg", emoji: "🥚" } },
       u: { correct: { word: "umbrella", emoji: "☔" }, wrong: { word: "lion", emoji: "🦁" } },
       v: { correct: { word: "van", emoji: "🚐" }, wrong: { word: "ball", emoji: "⚽" } },
-      
-      // CHANGED: Wagon (Cart) -> Whale (Clearer image)
       w: { correct: { word: "whale", emoji: "🐳" }, wrong: { word: "dog", emoji: "🐶" } },
-      
-      // Note: X-ray uses Skull because the X-ray emoji is also too new for many phones
       x: { correct: { word: "x-ray", emoji: "💀" }, wrong: { word: "cat", emoji: "🐱" } },
       y: { correct: { word: "yarn", emoji: "🧶" }, wrong: { word: "leaf", emoji: "🍃" } },
       z: { correct: { word: "zebra", emoji: "🦓" }, wrong: { word: "hat", emoji: "🎩" } }
     };
 
-    /* ---------- Beginning-sound game logic ---------- */
-
+    // --- LETTER GAME LOGIC ---
     const letterDisplayEl = document.getElementById("letterDisplay");
     const caseToggleBtn = document.getElementById("caseToggleBtn");
     const optionLeftBtn = document.getElementById("optionLeft");
@@ -412,7 +385,7 @@
     let isUppercase = true;
     let currentLetter = "a";
     let currentCorrectWord = "apple";
-    let isLocked = false; // Prevent clicking while animation plays
+    let isLocked = false;
 
     function updateCaseButtonText() {
       caseToggleBtn.textContent = isUppercase ? "Make Small" : "Make Big";
@@ -426,13 +399,10 @@
     }
 
     function setPictureButton(buttonEl, optionData, isCorrect) {
-      // Reset classes
       buttonEl.className = "picture-btn"; 
       buttonEl.dataset.correct = isCorrect ? "true" : "false";
-
       const emojiSpan = buttonEl.querySelector(".emoji");
       const wordSpan = buttonEl.querySelector(".word-label");
-
       emojiSpan.textContent = optionData.emoji;
       wordSpan.textContent = optionData.word;
     }
@@ -446,8 +416,7 @@
       currentLetter = letterOrder[letterIndex];
       const data = beginSoundChoices[currentLetter];
       currentCorrectWord = data.correct.word;
-      isLocked = false; // Unlock for new round
-
+      isLocked = false;
       refreshLetterCase();
 
       const options = [
@@ -462,10 +431,11 @@
       feedbackEl.textContent = "";
     }
 
-    // Helper: Fire confetti from the center of the button
     function fireConfettiFromButton(buttonEl) {
+      // Safety check: If confetti didn't load (no internet), don't crash
+      if (typeof confetti === 'undefined') return;
+
       const rect = buttonEl.getBoundingClientRect();
-      // Calculate center relative to viewport (0 to 1)
       const x = (rect.left + rect.width / 2) / window.innerWidth;
       const y = (rect.top + rect.height / 2) / window.innerHeight;
 
@@ -480,7 +450,7 @@
     }
 
     function handlePictureClick(event) {
-      if (isLocked) return; // Prevent double clicking
+      if (isLocked) return;
 
       const btn = event.currentTarget;
       const isCorrect = btn.dataset.correct === "true";
@@ -488,27 +458,20 @@
       if (isCorrect) {
         isLocked = true;
         btn.classList.add("correct");
-        
-        // 1. Fire confetti
         fireConfettiFromButton(btn);
         
-        // 2. Show text feedback
         feedbackEl.textContent = `Yes! ${letterDisplayEl.textContent} is for ${currentCorrectWord}.`;
         feedbackEl.style.color = "#2e7d32";
 
-        // 3. Wait longer so they can enjoy the confetti (1.5s)
         setTimeout(() => {
           letterIndex++;
           loadLetterRound();
         }, 1500);
 
       } else {
-        // Wrong answer
         btn.classList.add("wrong");
         feedbackEl.textContent = "Oops, try again!";
         feedbackEl.style.color = "#d32f2f";
-        
-        // Remove the shake class after animation ensures it can shake again
         setTimeout(() => {
           btn.classList.remove("wrong");
         }, 500);
@@ -525,10 +488,7 @@
 
     updateCaseButtonText();
     loadLetterRound();
-  </script>
 
+  </script>
 </body>
 </html>
-
-
-
