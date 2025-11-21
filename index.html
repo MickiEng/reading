@@ -1,0 +1,456 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Word Slider + Letter Game</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    html, body {
+      margin: 0;
+      padding: 0;
+      height: auto;
+    }
+
+    body {
+      font-family: system-ui, sans-serif;
+      background: #f5f5f5;
+    }
+
+    .card {
+      background: white;
+      padding: 24px;
+      border-radius: 16px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+      text-align: center;
+      max-width: 420px;
+      width: 90%;
+      margin: 24px auto;
+    }
+
+    h1 {
+      font-size: 1.4rem;
+      margin: 0 0 12px 0;
+    }
+
+    /* Slider letters */
+    .letters {
+      display: flex;
+      justify-content: center;
+      gap: 20px;
+      margin: 20px 0 10px;
+    }
+
+    .letter {
+      font-size: 3.2rem;
+      padding: 10px;
+      min-width: 54px;
+      border-radius: 8px;
+      border: 2px solid transparent;
+      transition: background 0.2s, transform 0.2s, border-color 0.2s;
+    }
+
+    .letter.inactive {
+      opacity: 0.3;
+    }
+
+    .letter.active {
+      background: #e0f7fa;
+      border-color: #00acc1;
+      transform: scale(1.08);
+      opacity: 1;
+    }
+
+    .blended-word {
+      font-size: 2.2rem;
+      margin-top: 4px;
+      min-height: 2.4rem;
+    }
+
+    /* BIG toddler-friendly slider */
+    input[type="range"] {
+      -webkit-appearance: none;
+      width: 100%;
+      height: 40px;
+      background: transparent;
+      margin-top: 25px;
+      touch-action: none;
+    }
+
+    input[type="range"]::-webkit-slider-runnable-track {
+      height: 18px;
+      background: #ddd;
+      border-radius: 10px;
+    }
+
+    input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 44px;
+      height: 44px;
+      background: #00acc1;
+      border-radius: 50%;
+      margin-top: -13px;
+      cursor: pointer;
+    }
+
+    input[type="range"]::-moz-range-track {
+      height: 18px;
+      background: #ddd;
+      border-radius: 10px;
+    }
+
+    input[type="range"]::-moz-range-thumb {
+      width: 44px;
+      height: 44px;
+      background: #00acc1;
+      border-radius: 50%;
+      cursor: pointer;
+    }
+
+    .hint {
+      font-size: 0.9rem;
+      color: #666;
+      margin-bottom: 12px;
+    }
+
+    .buttons {
+      display: flex;
+      justify-content: center;
+      gap: 12px;
+      margin-top: 12px;
+      flex-wrap: wrap;
+    }
+
+    button {
+      font-size: 1rem;
+      padding: 12px 20px;
+      border-radius: 999px;
+      border: none;
+      cursor: pointer;
+      background: #4caf50;
+      color: white;
+      font-weight: 600;
+      white-space: nowrap;
+    }
+
+    #shuffleBtn {
+      background: #2196f3;
+    }
+
+    button:active {
+      transform: scale(0.97);
+    }
+
+    /* Beginning-sound game styles */
+    .letter-display {
+      font-size: 4rem;
+      margin: 8px 0 12px;
+    }
+
+    .case-toggle-btn {
+      background: #9c27b0;
+      margin-bottom: 12px;
+    }
+
+    .picture-buttons {
+      display: flex;
+      gap: 12px;
+      justify-content: center;
+      flex-wrap: wrap;
+      margin-top: 12px;
+    }
+
+    .picture-btn {
+      flex: 1 1 45%;
+      min-width: 140px;
+      max-width: 180px;
+      border-radius: 16px;
+      border: 2px solid transparent;
+      padding: 12px;
+      background: #eeeeee;
+      cursor: pointer;
+    }
+
+    .picture-btn .emoji {
+      font-size: 2.2rem;
+      display: block;
+      margin-bottom: 4px;
+    }
+
+    .picture-btn .word-label {
+      font-size: 1.1rem;
+    }
+
+    .picture-btn.correct {
+      border-color: #4caf50;
+      background: #e8f5e9;
+    }
+
+    .picture-btn.wrong {
+      border-color: #f44336;
+      background: #ffebee;
+    }
+
+    .feedback {
+      margin-top: 10px;
+      font-size: 0.95rem;
+      min-height: 1.2em;
+      color: #444;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- CARD 1: Word slider -->
+  <div class="card">
+    <h1>Sound Slider</h1>
+
+    <div id="letters" class="letters"></div>
+    <div id="blendedWord" class="blended-word"></div>
+
+    <input id="blendSlider" type="range" min="0" max="2" step="1" value="0">
+
+    <div class="hint">Start on the left and slide slowly to the right.</div>
+
+    <div class="buttons">
+      <button id="nextWordBtn">New Word</button>
+      <button id="shuffleBtn">Shuffle</button>
+    </div>
+  </div>
+
+  <!-- CARD 2: Beginning-sound game -->
+  <div class="card">
+    <h1>Picture Picker</h1>
+
+    <div id="letterDisplay" class="letter-display">A</div>
+
+    <button id="caseToggleBtn" class="case-toggle-btn">Make Small</button>
+
+    <div class="picture-buttons">
+      <button id="optionLeft" class="picture-btn">
+        <span class="emoji">🍎</span>
+        <span class="word-label">apple</span>
+      </button>
+
+      <button id="optionRight" class="picture-btn">
+        <span class="emoji">☀️</span>
+        <span class="word-label">sun</span>
+      </button>
+    </div>
+
+    <div id="letterFeedback" class="feedback"></div>
+  </div>
+
+  <script>
+    /* ---------- Utility ---------- */
+    function shuffleArray(arr) {
+      for (let i = arr.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [arr[i], arr[j]] = [arr[j], arr[i]];
+      }
+    }
+
+    /* ---------- Word slider logic ---------- */
+
+    let words = [
+      // A - short a
+      "cat","can","cap","fan","man",
+      "map","nap","pan","rat","bag",
+      // E - short e
+      "bed","beg","den","hen","jet",
+      "leg","men","pen","red","wet",
+      // I - short i
+      "big","dig","fin","fix","hid",
+      "jig","pig","pin","sit","six",
+      // O - short o
+      "box","cob","dog","dot","hop",
+      "hot","log","mop","pot","top",
+      // U - short u
+      "bug","bun","cup","cut","fun",
+      "gum","hug","mud","sun","pup"
+    ];
+
+    let currentIndex = 0;
+
+    const lettersContainer = document.getElementById("letters");
+    const blendedWordEl = document.getElementById("blendedWord");
+    const slider = document.getElementById("blendSlider");
+    const nextWordBtn = document.getElementById("nextWordBtn");
+    const shuffleBtn = document.getElementById("shuffleBtn");
+
+    function loadWord() {
+      const word = words[currentIndex];
+      lettersContainer.innerHTML = "";
+      slider.value = 0;
+      blendedWordEl.textContent = "";
+
+      for (const ch of word) {
+        const span = document.createElement("span");
+        span.textContent = ch;
+        span.className = "letter inactive";
+        lettersContainer.appendChild(span);
+      }
+
+      updateBlend();
+    }
+
+    function updateBlend() {
+      const word = words[currentIndex];
+      let stage = parseInt(slider.value, 10);
+      const letterEls = lettersContainer.querySelectorAll(".letter");
+
+      letterEls.forEach((el, idx) => {
+        if (idx <= stage) {
+          el.classList.add("active");
+          el.classList.remove("inactive");
+        } else {
+          el.classList.add("inactive");
+          el.classList.remove("active");
+        }
+      });
+
+      if (stage === 0) blendedWordEl.textContent = word[0];
+      else if (stage === 1) blendedWordEl.textContent = word.slice(0, 2);
+      else blendedWordEl.textContent = word;
+    }
+
+    slider.addEventListener("input", updateBlend);
+
+    nextWordBtn.addEventListener("click", () => {
+      currentIndex = (currentIndex + 1) % words.length;
+      loadWord();
+    });
+
+    shuffleBtn.addEventListener("click", () => {
+      shuffleArray(words);
+      currentIndex = 0;
+      loadWord();
+    });
+
+    loadWord();
+
+    /* ---------- Beginning-sound game data ---------- */
+
+    const beginSoundChoices = {
+      a: { correct: { word: "apple", emoji: "🍎" }, wrong: { word: "sun", emoji: "☀️" } },
+      b: { correct: { word: "ball", emoji: "⚽" }, wrong: { word: "cat", emoji: "🐱" } },
+      c: { correct: { word: "car", emoji: "🚗" }, wrong: { word: "fish", emoji: "🐟" } },
+      d: { correct: { word: "dog", emoji: "🐶" }, wrong: { word: "hat", emoji: "🎩" } },
+      e: { correct: { word: "egg", emoji: "🥚" }, wrong: { word: "bus",emoji: "🚌" } },
+      f: { correct: { word: "fish", emoji: "🐟" }, wrong: { word: "moon", emoji: "🌙" } },
+      g: { correct: { word: "goat", emoji: "🐐" }, wrong: { word: "leaf", emoji: "🍃" } },
+      h: { correct: { word: "hat", emoji: "🎩" }, wrong: { word: "star", emoji: "⭐" } },
+      i: { correct: { word: "ice", emoji: "🧊" }, wrong: { word: "bed", emoji: "🛏️" } },
+      j: { correct: { word: "jet", emoji: "✈️" }, wrong: { word: "pig", emoji: "🐷" } },
+      k: { correct: { word: "key", emoji: "🔑" }, wrong: { word: "apple", emoji: "🍎" } },
+      l: { correct: { word: "lion", emoji: "🦁" }, wrong: { word: "egg", emoji: "🥚" } },
+      m: { correct: { word: "moon", emoji: "🌙" }, wrong: { word: "car", emoji: "🚗" } },
+      n: { correct: { word: "nest", emoji: "🪺" }, wrong: { word: "dog", emoji: "🐶" } },
+      o: { correct: { word: "octopus", emoji: "🐙" }, wrong: { word: "hat", emoji: "🎩" } },
+      p: { correct: { word: "pig", emoji: "🐷" }, wrong: { word: "sun", emoji: "☀️" } },
+      q: { correct: { word: "queen", emoji: "👑" }, wrong: { word: "fish", emoji: "🐟" } },
+      r: { correct: { word: "rain", emoji: "🌧️" }, wrong: { word: "cat", emoji: "🐱" } },
+      s: { correct: { word: "sun", emoji: "☀️" }, wrong: { word: "moon", emoji: "🌙" } },
+      t: { correct: { word: "tiger", emoji: "🐯" }, wrong: { word: "egg", emoji: "🥚" } },
+      u: { correct: { word: "umbrella", emoji: "☔" }, wrong: { word: "lion", emoji: "🦁" } },
+      v: { correct: { word: "van", emoji: "🚐" }, wrong: { word: "ball", emoji: "⚽" } },
+      w: { correct: { word: "wagon", emoji: "🛒" }, wrong: { word: "dog", emoji: "🐶" } },
+      x: { correct: { word: "x-ray", emoji: "💀" }, wrong: { word: "cat", emoji: "🐱" } },
+      y: { correct: { word: "yarn", emoji: "🧶" }, wrong: { word: "leaf", emoji: "🍃" } },
+      z: { correct: { word: "zebra", emoji: "🦓" }, wrong: { word: "hat", emoji: "🎩" } }
+    };
+
+    /* ---------- Beginning-sound game logic ---------- */
+
+    const letterDisplayEl = document.getElementById("letterDisplay");
+    const caseToggleBtn = document.getElementById("caseToggleBtn");
+    const optionLeftBtn = document.getElementById("optionLeft");
+    const optionRightBtn = document.getElementById("optionRight");
+    const feedbackEl = document.getElementById("letterFeedback");
+
+    let letterOrder = Object.keys(beginSoundChoices);
+    shuffleArray(letterOrder);
+
+    let letterIndex = 0;
+    let isUppercase = true;
+    let currentLetter = "a";
+    let currentCorrectWord = "apple";
+
+    function updateCaseButtonText() {
+      caseToggleBtn.textContent = isUppercase ? "Make Small" : "Make Big";
+    }
+
+    function refreshLetterCase() {
+      letterDisplayEl.textContent = isUppercase
+        ? currentLetter.toUpperCase()
+        : currentLetter.toLowerCase();
+      updateCaseButtonText();
+    }
+
+    function setPictureButton(buttonEl, optionData, isCorrect) {
+      buttonEl.dataset.correct = isCorrect ? "true" : "false";
+      buttonEl.classList.remove("correct", "wrong");
+
+      const emojiSpan = buttonEl.querySelector(".emoji");
+      const wordSpan = buttonEl.querySelector(".word-label");
+
+      emojiSpan.textContent = optionData.emoji;
+      wordSpan.textContent = optionData.word;
+    }
+
+    function loadLetterRound() {
+      if (letterIndex >= letterOrder.length) {
+        shuffleArray(letterOrder);
+        letterIndex = 0;
+      }
+
+      currentLetter = letterOrder[letterIndex];
+      const data = beginSoundChoices[currentLetter];
+      currentCorrectWord = data.correct.word;
+
+      refreshLetterCase();
+
+      const options = [
+        { data: data.correct, isCorrect: true },
+        { data: data.wrong, isCorrect: false }
+      ];
+      shuffleArray(options);
+
+      setPictureButton(optionLeftBtn, options[0].data, options[0].isCorrect);
+      setPictureButton(optionRightBtn, options[1].data, options[1].isCorrect);
+
+      feedbackEl.textContent = "";
+    }
+
+    function handlePictureClick(event) {
+      const btn = event.currentTarget;
+      const isCorrect = btn.dataset.correct === "true";
+
+      if (isCorrect) {
+        btn.classList.add("correct");
+        feedbackEl.textContent =
+          `Yes! ${letterDisplayEl.textContent} is for ${currentCorrectWord}.`;
+
+        setTimeout(() => {
+          letterIndex++;
+          loadLetterRound();
+        }, 800);
+      } else {
+        btn.classList.add("wrong");
+        feedbackEl.textContent = "Try again.";
+      }
+    }
+
+    optionLeftBtn.addEventListener("click", handlePictureClick);
+    optionRightBtn.addEventListener("click", handlePictureClick);
+
+    caseToggleBtn.addEventListener("click", () => {
+      isUppercase = !isUppercase;
+      refreshLetterCase();
+    });
+
+    updateCaseButtonText();
+    loadLetterRound();
+  </script>
+
+</body>
+</html>
